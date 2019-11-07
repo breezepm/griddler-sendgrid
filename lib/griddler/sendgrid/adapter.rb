@@ -66,7 +66,7 @@ module Griddler
       end
 
       def extract_file_at(index)
-        filename = attachment_filename(index)
+        filename = clean_invalid_utf8_bytes(attachment_filename(index))
 
         params.delete("attachment#{index + 1}".to_sym).tap do |file|
           if filename.present?
@@ -82,6 +82,15 @@ module Griddler
       def attachment_info
         @attachment_info ||= JSON.parse(params.delete("attachment-info") || "{}")
       end
+      
+      def clean_invalid_utf8_bytes(text)
+        if text && !text.valid_encoding?
+          text.force_encoding('ISO-8859-1').encode('UTF-8')
+        else
+          text
+        end
+      end
+      
     end
   end
 end
